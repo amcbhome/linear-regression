@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
+from scipy.stats import linregress
 
 # --- Page Configuration ---
 st.set_page_config(
@@ -39,13 +41,35 @@ st.write(
     "Using the principles of linear regression ($y = a + bx$), how would you estimate the "
     "total overhead costs if the company plans to produce 1,400 units next month?"
 )
-st.markdown(
-    """
-    * Identify the dependent (y) and independent (x) variables.
-    * Recall the formulas for calculating 'a' (y-intercept) and 'b' (slope).
-    * (You don't need to perform the calculation in this app, but consider the steps involved!)
-    """
-)
+
+# Perform Linear Regression
+x = df_exercise['Production Volume (Units)']
+y = df_exercise['Total Overhead Costs (£)']
+
+slope, intercept, r_value, p_value, std_err = linregress(x, y)
+
+st.subheader("Regression Analysis Results:")
+st.write(f"The calculated linear regression equation is: **Y = {intercept:.2f} + {slope:.2f}X**")
+st.write(f"Where Y is Total Overhead Costs and X is Production Volume (Units).")
+st.write(f"This means for every unit increase in production, overhead costs increase by £{slope:.2f}.")
+st.write(f"The fixed overhead cost (when production is 0) is estimated at £{intercept:.2f}.")
+
+# Prediction for 1400 units
+predicted_cost_1400 = intercept + slope * 1400
+st.write(f"**Prediction:** Based on this model, for 1,400 units, the estimated total overhead cost would be £{predicted_cost_1400:.2f}.")
+
+
+# Plotting the regression line
+st.subheader("Regression Line Graph:")
+fig, ax = plt.subplots(figsize=(10, 6))
+ax.scatter(x, y, color='blue', label='Actual Data Points')
+ax.plot(x, intercept + slope * x, color='red', label=f'Regression Line: Y = {intercept:.2f} + {slope:.2f}X')
+ax.set_xlabel('Production Volume (Units)')
+ax.set_ylabel('Total Overhead Costs (£)')
+ax.set_title('Production Volume vs. Total Overhead Costs with Regression Line')
+ax.grid(True, linestyle='--', alpha=0.7)
+ax.legend()
+st.pyplot(fig) # Display the plot in Streamlit
 
 st.markdown("---")
 
@@ -71,9 +95,70 @@ st.markdown(
     """
     * **Purpose:** To predict future values of the dependent variable or to understand the strength and direction of the relationship between variables.
     * **Assumptions:** For reliable results, linear regression assumes a linear relationship, independence of observations, homoscedasticity (constant variance of residuals), and normally distributed residuals.
-    * **Coefficient of Determination ($r^2$):** Often displayed alongside regression results, $r^2$ indicates the proportion of the variance in the dependent variable that can be predicted from the independent variable(s). A higher $r^2$ suggests a better fit of the model to the data.
     """
 )
+st.markdown("---")
+
+# --- Significance of Correlation Section ---
+st.header("Significance of Correlation and Its Calculation")
+st.write(
+    "While linear regression helps us find a relationship, **correlation** tells us about the strength "
+    "and direction of that linear relationship."
+)
+
+st.subheader("The Correlation Coefficient ($r$)")
+st.write(
+    "The **Pearson product-moment correlation coefficient ($r$)** measures the strength and direction "
+    "of a linear relationship between two variables. Its value always ranges between -1 and +1."
+)
+st.markdown(
+    """
+    * **$r = +1$**: Perfect positive linear correlation. As one variable increases, the other increases proportionally.
+    * **$r = -1$**: Perfect negative linear correlation. As one variable increases, the other decreases proportionally.
+    * **$r = 0$**: No linear correlation. There's no consistent linear relationship between the variables.
+    * **Values between -1 and +1**: Indicate varying degrees of positive or negative linear correlation (e.g., +0.8 is strong positive, -0.3 is weak negative).
+    """
+)
+st.write(f"For our exercise, the correlation coefficient (r) is: **{r_value:.4f}**")
+
+st.subheader("How $r$ is Calculated:")
+st.write(
+    "The formula for the Pearson correlation coefficient is complex, involving the covariance "
+    "of the two variables divided by the product of their standard deviations. It can be expressed as:"
+)
+st.latex(r"""
+r = \frac{n(\sum xy) - (\sum x)(\sum y)}{\sqrt{[n\sum x^2 - (\sum x)^2][n\sum y^2 - (\sum y)^2]}}
+""")
+st.write(
+    "Where:"
+    "\n* $n$: Number of data pairs."
+    "\n* $\sum xy$: Sum of the product of each x and y pair."
+    "\n* $\sum x$: Sum of all x values."
+    "\n* $\sum y$: Sum of all y values."
+    "\n* $\sum x^2$: Sum of the squares of each x value."
+    "\n* $\sum y^2$: Sum of the squares of each y value."
+)
+st.write(
+    "*(Note: Software like Python's `scipy.stats.linregress` or spreadsheet programs handle this calculation automatically.)*"
+)
+
+
+st.subheader("The Coefficient of Determination ($r^2$)")
+st.write(
+    "The **coefficient of determination ($r^2$)** is the square of the correlation coefficient ($r^2 = r \times r$). "
+    "It is even more significant from a predictive standpoint."
+)
+st.markdown(
+    """
+    * **Interpretation:** $r^2$ represents the proportion (or percentage) of the total variation in the dependent variable (y) that can be explained by the independent variable (x) through the linear regression model.
+    * For example, if $r^2 = 0.81$, it means that 81% of the variation in the dependent variable can be explained by the variation in the independent variable. The remaining 19% is due to other unmeasured factors or random variation.
+    * A higher $r^2$ value (closer to 1) indicates that the regression model is a better fit for the data and provides more reliable predictions.
+    """
+)
+st.write(f"For our exercise, the coefficient of determination (r²) is: **{r_value**2:.4f}**")
+st.write(f"This means approximately {r_value**2 * 100:.2f}% of the variation in Total Overhead Costs can be explained by the Production Volume.")
+
+
 st.markdown("---")
 
 # --- List of Uses Section ---
